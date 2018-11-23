@@ -1,6 +1,6 @@
 version: '2'
 services:
   boilerplate-api:
-    command: yarn start
+    command: npm start
     environment:
       - NODE_ENV=production

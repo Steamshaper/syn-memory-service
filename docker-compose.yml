@@ -1,4 +1,4 @@
-version: '2'
+version: '3'
 services:
   boilerplate-api:
     build: .
@@ -7,11 +7,32 @@ services:
     volumes:
       - .:/app
     ports:
-      - '3000:3000'
-    depends_on:
-      - mongodb
+      - '4000:4000'
+    #    depends_on:
+    #      - mongodb
+    networks:
+      - memory-net
 
-  mongodb:
-    image: mongo
+  #  mongodb:
+  #    image: mongo
+  #    ports:
+  #      - '27017:27017'
+  minio:
+    image: minio/minio
+    volumes:
+      - memory-storage:/export
     ports:
-      - '27017:27017'
+      - '9000:9000'
+    environment:
+      MINIO_ACCESS_KEY: accessKEY
+      MINIO_SECRET_KEY: secretKEY
+    command: server /export
+    networks:
+      - memory-net
+
+## By default this config uses default local driver,
+## For custom volumes replace with volume driver configuration.
+volumes:
+  memory-storage:
+networks:
+  memory-net:
