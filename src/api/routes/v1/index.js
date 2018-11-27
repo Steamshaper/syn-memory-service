@@ -1,6 +1,8 @@
 const express = require('express');
 // const userRoutes = require('./user.route');
 // const authRoutes = require('./auth.route');
+const multer = require('multer');
+const multipartMiddleware = multer({ dest: 'uploads/' });
 const memorizeRoute = require('./memorize.route');
 const router = express.Router();
 
@@ -14,7 +16,7 @@ router.get('/status', (req, res) => res.send('OK'));
  */
 // router.use('/docs', express.static('docs'));
 
-router.use('/memorize', memorizeRoute);
+router.use('/memorize', multipartMiddleware.single('filepond'), memorizeRoute);
 // router.use('/users', userRoutes);
 // router.use('/auth', authRoutes);
 

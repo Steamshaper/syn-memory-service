@@ -6,7 +6,7 @@ const methodOverride = require('method-override');
 const cors = require('cors');
 const helmet = require('helmet');
 const passport = require('passport');
-const fileUpload = require('express-fileupload');
+
 const routes = require('../api/routes/v1');
 const { logs } = require('./vars');
 const strategies = require('./passport');
@@ -38,8 +38,6 @@ app.use(helmet());
 // enable CORS - Cross Origin Resource Sharing
 app.use(cors());
 
-app.use(fileUpload());
-
 // enable authentication
 app.use(passport.initialize());
 passport.use('jwt', strategies.jwt);
@@ -50,12 +48,12 @@ passport.use('google', strategies.google);
 app.use('/v1', routes);
 
 // if error is not an instanceOf APIError, convert it.
-app.use(error.converter);
+//app.use(error.converter);
 
 // catch 404 and forward to error handler
 app.use(error.notFound);
 
 // error handler, send stacktrace only during development
-app.use(error.handler);
+//app.use(error.handler);
 
 module.exports = app;
