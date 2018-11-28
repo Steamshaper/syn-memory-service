@@ -49,7 +49,7 @@ const record = async (req, res, next) => {
     console.log(`Deleted: ${path}`);
   });
 
-  return;
+  return putResponse;
 };
 const search = async (query, opts) => ({
   query,

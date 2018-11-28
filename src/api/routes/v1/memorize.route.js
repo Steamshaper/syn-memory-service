@@ -66,7 +66,12 @@ router
    * @apiError (Unauthorized 401)  Unauthorized     Only authenticated users can create the data
    * @apiError (Forbidden 403)     Forbidden        Only admins can create the data
    */
-  .post(memorize.record);
+  .post((req, res, next) => {
+    memorize
+      .record(req, res, next)
+      .then(recRes => res.send({ state: { val: recRes, err: 200 } }))
+      .then(err => res.send({ state: { val: err, err: 500 } }));
+  });
 
 router
   .route('/_search')
