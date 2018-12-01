@@ -11,7 +11,7 @@ const minioClient = new Minio.Client({
   secretKey: 'secretKEY',
 });
 
-const getBucket = async (name, { createOnMiss = false }) => {
+const createBucketIfNeeded = async (name, { createOnMiss = false }) => {
   if (createOnMiss) {
     const bucketExists = await minioClient.bucketExists(name);
     if (!bucketExists) {
@@ -22,12 +22,12 @@ const getBucket = async (name, { createOnMiss = false }) => {
   }
 };
 
-const record = async (req, res, next) => {
+const DEDAULT_BUCKET = 'root-bkt';
+const record = async ({ path, originalname, filename, mimetype, size }) => {
   // File that needs to be uploaded.
   // Make a bucket called europetrip.
 
-  const { path, originalname, filename, fieldname, mimetype, size } = req.file;
-  await getBucket('root-bkt', { createOnMiss: true });
+  await createBucketIfNeeded(DEDAULT_BUCKET, { createOnMiss: true });
   const metaData = {
     'Content-Type': 'application/octet-stream',
     'X-Amz-Meta-Testing': filename,
@@ -36,8 +36,8 @@ const record = async (req, res, next) => {
   };
   // Using fPutObject API upload your file to the bucket europetrip.
   const putResponse = await minioClient.fPutObject(
-    'root-bkt',
-    originalname,
+    DEDAULT_BUCKET,
+    filename,
     path,
     metaData
   );
@@ -46,14 +46,20 @@ const record = async (req, res, next) => {
     if (err) {
       console.log(`Unable to delete ${path}`, err);
     }
-    console.log(`Deleted: ${path}`);
+    console.log(`Deleted temp file: ${filename} - ${path}`);
   });
 
-  return putResponse;
+  return { putResponse, filename };
 };
+
+const del = filename => {
+  return minioClient.removeObject(DEDAULT_BUCKET, filename);
+};
+
 const search = async (query, opts) => ({
   query,
   memories: [],
 });
 module.exports.record = record;
+module.exports.del = del;
 module.exports.search = search;

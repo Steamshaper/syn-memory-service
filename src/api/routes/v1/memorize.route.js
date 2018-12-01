@@ -1,3 +1,4 @@
+'use strict';
 const memorize = require('../../../components/memorize');
 
 const express = require('express');
@@ -68,9 +69,22 @@ router
    */
   .post((req, res, next) => {
     memorize
-      .record(req, res, next)
-      .then(recRes => res.send({ state: { val: recRes, err: 200 } }))
-      .then(err => res.send({ state: { val: err, err: 500 } }));
+      .record(req.file)
+      .then(({ filename }) => res.send({ state: { filename, err: 200 } }))
+      .catch(err => res.send({ state: { val: err, err: 500 } }));
+  })
+  .delete((req, res, next) => {
+    const {
+      state: { filename },
+    } = req.body;
+    memorize
+      .del(filename)
+      .then(() => {
+        res.send({ state: { val: req.headers, err: 200 } });
+      })
+      .catch(error => {
+        res.send(error);
+      });
   });
 
 router
