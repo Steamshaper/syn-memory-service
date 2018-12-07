@@ -23,7 +23,27 @@ const createBucketIfNeeded = async (name, { createOnMiss = false }) => {
 };
 
 const DEDAULT_BUCKET = 'root-bkt';
-const record = async ({ path, originalname, filename, mimetype, size }) => {
+
+module.exports.load = ({ filename }) => {
+  const tempFilePath = `temp/${filename}`;
+  minioClient
+    .fGetObject(DEDAULT_BUCKET, filename, `temp/${filename}`)
+    .then(resp => {
+      console.log(resp);
+      return Promise.resolve({ filename, path: tempFilePath });
+    })
+    .catch(err => {
+      console.error('sbam', err);
+    });
+};
+
+module.exports.record = async ({
+  path,
+  originalname,
+  filename,
+  mimetype,
+  size,
+}) => {
   // File that needs to be uploaded.
   // Make a bucket called europetrip.
 
@@ -52,14 +72,13 @@ const record = async ({ path, originalname, filename, mimetype, size }) => {
   return { putResponse, filename };
 };
 
-const del = filename => {
-  return minioClient.removeObject(DEDAULT_BUCKET, filename);
+module.exports.del = async filename => {
+  return await minioClient.removeObject(DEDAULT_BUCKET, filename);
 };
 
 const search = async (query, opts) => ({
   query,
   memories: [],
 });
-module.exports.record = record;
-module.exports.del = del;
+
 module.exports.search = search;
