@@ -1,8 +1,8 @@
 'use strict';
+const express = require('express');
 const memorize = require('../../../components/memorize');
 
-const express = require('express');
-const fs = require('fs');
+const { ADMIN, LOGGED_USER, authorize } = require('../../middlewares/auth');
 /* const { authorize, ADMIN, LOGGED_USER } = require('../../middlewares/auth');
 const {
   listUsers,
@@ -17,7 +17,7 @@ const router = express.Router();
  * Load user when API with userId route parameter is hit
  */
 router
-  .get('/:filename', (req, res, next) => {
+  .get('/:filename', (req, res) => {
     if (req.params) {
       memorize
         .load({ filename: req.params.filename })
@@ -56,7 +56,7 @@ router
    * @apiError (Unauthorized 401)  Unauthorized     Only authenticated users can create the data
    * @apiError (Forbidden 403)     Forbidden        Only admins can create the data
    */
-  .post((req, res, next) => {
+  .post(authorize(LOGGED_USER), (req, res, next) => {
     memorize
       .record(req.file)
       .then(({ filename }) => res.send({ state: { filename, err: 200 } }))

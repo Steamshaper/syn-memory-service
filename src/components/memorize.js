@@ -32,7 +32,7 @@ const readMetadata = async (bucket, filename) => {
 
 const DEDAULT_BUCKET = 'root-bkt';
 
-module.exports.load = async ({ filename }) => {
+exports.load = async ({ filename }) => {
   const tempFilePath = `temp/${filename}`;
   try {
     const { metaData } = await readMetadata(DEDAULT_BUCKET, filename);
@@ -45,13 +45,7 @@ module.exports.load = async ({ filename }) => {
   }
 };
 
-module.exports.record = async ({
-  path,
-  originalname,
-  filename,
-  mimetype,
-  size,
-}) => {
+exports.record = async ({ path, originalname, filename, mimetype, size }) => {
   // File that needs to be uploaded.
   // Make a bucket called europetrip.
 
@@ -80,13 +74,17 @@ module.exports.record = async ({
   return { putResponse, filename };
 };
 
-module.exports.del = async filename => {
+exports.del = async filename => {
   return await minioClient.removeObject(DEDAULT_BUCKET, filename);
 };
 
-const search = async (query, opts) => ({
+exports.list = async ({ bucket = DEDAULT_BUCKET } = {}) => {
+  let i = 0;
+  minioClient.listObjectsV2(bucket).on('data', item => {
+    console.log(`#${i++}`, item);
+  });
+};
+exports.search = async (query, opts) => ({
   query,
   memories: [],
 });
-
-module.exports.search = search;

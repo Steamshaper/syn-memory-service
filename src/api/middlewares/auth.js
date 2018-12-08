@@ -6,7 +6,7 @@ const APIError = require('../utils/APIError');
 const ADMIN = 'admin';
 const LOGGED_USER = '_loggedUser';
 
-const handleJWT = (req, res, next, roles) => async (err, user, info) => {
+const handleJWT = (req, res, next, roles) => async (err, payload, info) => {
   const error = err || info;
   const logIn = Promise.promisify(req.logIn);
   const apiError = new APIError({
@@ -14,7 +14,7 @@ const handleJWT = (req, res, next, roles) => async (err, user, info) => {
     status: httpStatus.UNAUTHORIZED,
     stack: error ? error.stack : undefined,
   });
-
+  /* 
   try {
     if (error || !user) throw error;
     await logIn(user, { session: false });
@@ -34,9 +34,10 @@ const handleJWT = (req, res, next, roles) => async (err, user, info) => {
     return next(apiError);
   } else if (err || !user) {
     return next(apiError);
-  }
+  } 
 
   req.user = user;
+  */
 
   return next();
 };
