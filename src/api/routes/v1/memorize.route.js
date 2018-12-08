@@ -2,6 +2,7 @@
 const memorize = require('../../../components/memorize');
 
 const express = require('express');
+const fs = require('fs');
 /* const { authorize, ADMIN, LOGGED_USER } = require('../../middlewares/auth');
 const {
   listUsers,
@@ -18,11 +19,16 @@ const router = express.Router();
 router
   .get('/:filename', (req, res, next) => {
     if (req.params) {
-      memorize.load({ filename: req.params.filename });
-      res.send({ state: { err: 200 } });
-      return;
+      memorize
+        .load({ filename: req.params.filename })
+        .then(({ file, metaData }) => {
+          res.set('content-type', metaData['content-type']);
+          res.send(file);
+        })
+        .catch(err => {
+          res.send({ state: { err: 500, body: err } });
+        });
     }
-    res.send({ state: { err: 111 } });
   })
   .route('/')
   /**

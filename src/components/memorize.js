@@ -1,5 +1,8 @@
 const Minio = require('minio');
 const fs = require('fs');
+const { promisify } = require('util');
+
+const readFile = promisify(fs.readFile);
 
 // Instantiate the minio client with the endpoint
 // and access keys as shown below.
@@ -22,19 +25,24 @@ const createBucketIfNeeded = async (name, { createOnMiss = false }) => {
   }
 };
 
+const readMetadata = async (bucket, filename) => {
+  const filestats = await minioClient.statObject(bucket, filename);
+  return filestats;
+};
+
 const DEDAULT_BUCKET = 'root-bkt';
 
-module.exports.load = ({ filename }) => {
+module.exports.load = async ({ filename }) => {
   const tempFilePath = `temp/${filename}`;
-  minioClient
-    .fGetObject(DEDAULT_BUCKET, filename, `temp/${filename}`)
-    .then(resp => {
-      console.log(resp);
-      return Promise.resolve({ filename, path: tempFilePath });
-    })
-    .catch(err => {
-      console.error('sbam', err);
-    });
+  try {
+    const { metaData } = await readMetadata(DEDAULT_BUCKET, filename);
+    console.log(metaData);
+    await minioClient.fGetObject(DEDAULT_BUCKET, filename, tempFilePath);
+    const file = await readFile(tempFilePath);
+    return { metaData, file };
+  } catch (err) {
+    return err;
+  }
 };
 
 module.exports.record = async ({
@@ -49,10 +57,10 @@ module.exports.record = async ({
 
   await createBucketIfNeeded(DEDAULT_BUCKET, { createOnMiss: true });
   const metaData = {
-    'Content-Type': 'application/octet-stream',
+    'Content-Type': mimetype,
     'X-Amz-Meta-Testing': filename,
-    mimetype,
     size,
+    filename: originalname,
   };
   // Using fPutObject API upload your file to the bucket europetrip.
   const putResponse = await minioClient.fPutObject(
